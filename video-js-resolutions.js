@@ -1,4 +1,12 @@
 // Resolution switching support for VideoJS
+//
+// In this plugin I'm really going out of my way to *not* override the
+// core VideoJS namespace and to *not* change the core API.  As a
+// result this plugin is not as efficient as it might be.  It
+// initializes itself *for each player* as scoped variables inside the
+// plugin closure and grafts itself on to *the instance on which it was
+// called* rather than on the VideoJS player prototype.  I don't expect
+// this to be a big deal for anybody but it
 videojs.plugin('resolutions', function(options) {
   var player = this;
 
