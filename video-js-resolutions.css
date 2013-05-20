@@ -1,0 +1,5 @@
+/* Resolutions
+-------------------------------------------------------------------------------- */
+.vjs-default-skin .vjs-resolutions-button { width: 5em; cursor: pointer !important; }
+/* Resolutions Icon */
+.vjs-default-skin .vjs-resolutions-button .vjs-control-content { width: 17px; height: 17px; background: url('video-js.png') -74px 390px; margin: 0.5em auto 0; }
