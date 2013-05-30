@@ -1,12 +1,12 @@
-// Resolution switching support for VideoJS
+// Resolution switching support for videojs
 //
 // In this plugin I'm really going out of my way to *not* override the
-// core VideoJS namespace and to *not* change the core API.  As a
+// core videojs namespace and to *not* change the core API.  As a
 // result this plugin is not as efficient as it might be.  It
 // initializes itself *for each player* as scoped variables inside the
 // plugin closure and grafts itself on to *the instance on which it was
-// called* rather than on the VideoJS player prototype.  I don't expect
-// this to be a big deal for anybody but it
+// called* rather than on the videojs player prototype.  I don't expect
+// this to be a big deal for anybody.
 videojs.plugin('resolutions', function(options) {
   var player = this;
 
@@ -25,6 +25,29 @@ videojs.plugin('resolutions', function(options) {
 
   this.resolutions_ = {
     options_: {},
+
+    stopStream: function(){
+      switch(player.techName){
+      case "Html5":
+        break;
+      case "Flash":
+        player.tech.el_.vjs_stop();
+        break;
+      }
+
+      player.src("");
+    },
+
+    // it is necessary to remove the sources from the DOM after
+    // parsing them because otherwise the native player may be
+    // inclined to stream both sources
+    removeSources: function(el){
+      var srcs = player.el_.getElementsByTagName("source");
+
+      for(var i=0;i<srcs.length;i++){
+        this.el_.removeChild(srcs[i]);
+      }
+    },
 
     // buckets all parsed sources by their type ("video/mp4", for example)
     // @param {Array} array of sources:
@@ -108,6 +131,8 @@ videojs.plugin('resolutions', function(options) {
     //  "index": 0
     // }
     selectSource: function(sources){
+      this.removeSources();
+
       var sourcesByType = this.bucketByTypes(sources);
       var typeAndTech   = this.selectTypeAndTech(sources);
 
@@ -250,26 +275,30 @@ videojs.plugin('resolutions', function(options) {
       return this; // basically a no-op
     }
 
-    this.pause();
-
     // remember our position in the current stream
     var curTime = this.currentTime();
 
     // attempts to stop the download of the existing video
-    if (this.techName === "Html5") this.src("");
+    this.resolutions_.stopStream();
+
+    this.pause();
 
     // reload the new tech and the new source (mostly used to re-fire
-    // the events we want)
-    this.src(new_source.src);
+    // the events we want) - yes, we need to actually restart the
+    // tech. simply setting the source is not reliable and can cause
+    // multiple streams
+    this.loadTech(this.techName, {src: new_source.src});
 
     // when the technology is re-started, kick off the new stream
     this.ready(function() {
       this.one('loadeddata', vjs.bind(this, function() {
         this.currentTime(curTime);
       }));
+
       this.trigger('resolutionchange');
       this.load();
       this.play();
+
       // remember this selection
       vjs.setLocalStorage('videojs_preferred_res', parseInt(new_source.index, 10));
     });
@@ -366,6 +395,7 @@ videojs.plugin('resolutions', function(options) {
       this.el_.setAttribute('id',"vjs-resolutions-button");
     }
   });
+
   ResolutionsButton.prototype.kind_ = 'resolutions';
   ResolutionsButton.prototype.buttonText = 'Resolutions';
   ResolutionsButton.prototype.className = 'vjs-resolutions-button';
@@ -380,12 +410,9 @@ videojs.plugin('resolutions', function(options) {
   // resolution-aware source selector
   var source = player.resolutions_.selectSource(player.options_['sources']);
 
-  // tell the player to use the url to the new source
-  if (player.techName === "Html5") player.src(""); // abort existing stream
-  player.src(source.src);
-
   // when the player is ready, add the resolution button to the control bar
   player.ready(function(){
+    player.changeResolution(source);
     var button = new ResolutionsButton(player);
     player.controlBar.addChild(button);
   });

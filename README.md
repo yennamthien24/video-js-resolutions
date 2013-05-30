@@ -1,4 +1,4 @@
-Video JS Resolution Plugin
+Video JS Resolutions Plugin
 ==========================
 
 Provides resolution switching capabilities for the [VideoJS](https://github.com/videojs/video.js) player.
@@ -30,6 +30,11 @@ myPlayer.src([
   { type: "video/ogg", src: "http://www.example.com/path/to/video.ogv" }
 ]);
 ```
+
+Browser Support
+---------------
+
+Target browsers for this implementation are Chrome, Safari, IE10, Firefox, Android, and iOS.
 
 Caveats
 -------
