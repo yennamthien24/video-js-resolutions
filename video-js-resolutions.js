@@ -26,6 +26,8 @@ videojs.plugin('resolutions', function(options) {
   this.resolutions_ = {
     options_: {},
 
+    // takes an existing stream and stops the download entirely
+    // without killing the player or disposing of the tech
     stopStream: function(){
       switch(player.techName){
       case "Html5":
@@ -35,6 +37,8 @@ videojs.plugin('resolutions', function(options) {
         break;
       }
 
+      // this may cause flash or the native player to emit errors but
+      // they are harmless
       player.src("");
     },
 
@@ -42,10 +46,13 @@ videojs.plugin('resolutions', function(options) {
     // parsing them because otherwise the native player may be
     // inclined to stream both sources
     removeSources: function(el){
-      var srcs = player.el_.getElementsByTagName("source");
+      var videoEl = player.el_.getElementsByTagName("video")[0];
 
+      if (player.techName !== "Html5" || !videoEl) return;
+
+      var srcs = videoEl.getElementsByTagName("source");
       for(var i=0;i<srcs.length;i++){
-        this.el_.removeChild(srcs[i]);
+        videoEl.removeChild(srcs[i]);
       }
     },
 
