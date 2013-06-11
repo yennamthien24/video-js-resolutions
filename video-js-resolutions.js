@@ -365,21 +365,19 @@ videojs.plugin('resolutions', function(options) {
   ResolutionButton.prototype.onClick = function(e){
     // Only proceed if the target of the click was a DIV (just the button and its inner div, not the menu)
     // This prevents the menu from opening and closing when one of the menu items is clicked.
-    if (e.target.tagName == "DIV") {
+    if (e.target.className.match(/vjs-control-content/)) {
+
       // Toggle the 'touched' class
-      if (this.el_.className.match(/touched/)) {
-        // If this button has already been pressed, just remove the 'touched' class.
-        this.removeClass('touched');
-      }
+      this[this.el_.className.match(/touched/) ? "removeClass" : "addClass"]("touched");
     } else {
+
       // Remove the 'touched' class from all control bar buttons with menus to hide any already visible...
       var buttons = document.getElementsByClassName('vjs-menu-button');
       for(var i=0;i<buttons.length;i++){
         videojs.removeClass(buttons[i], 'touched');
       }
 
-      // then add the 'touched' class to this button to show its menu.
-      this.addClass('touched');
+      this.removeClass('touched');
     }
   };
 
