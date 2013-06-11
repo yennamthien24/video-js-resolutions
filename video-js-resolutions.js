@@ -285,16 +285,19 @@ videojs.plugin('resolutions', function(options) {
     // remember our position in the current stream
     var curTime = this.currentTime();
 
+    this.pause();
+
     // attempts to stop the download of the existing video
     this.resolutions_.stopStream();
 
-    this.pause();
-
-    // reload the new tech and the new source (mostly used to re-fire
-    // the events we want) - yes, we need to actually restart the
-    // tech. simply setting the source is not reliable and can cause
-    // multiple streams
-    this.loadTech(this.techName, {src: new_source.src});
+    // HTML5 tends to not recover from reloading the tech but it can
+    // generally handle changing src.  Flash generally cannot handle
+    // changing src but can reload its tech.
+    if (this.techName === "Html5"){
+      this.src(new_source.src);
+    } else {
+      this.loadTech(this.techName, {src: new_source.src});
+    }
 
     // when the technology is re-started, kick off the new stream
     this.ready(function() {
